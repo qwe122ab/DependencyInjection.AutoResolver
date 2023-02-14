@@ -1,5 +1,5 @@
 ﻿namespace DependencyInjection.AutoResolver;
 
-public interface IAsSelf
+public interface IResolveAsSelf
 {
 }

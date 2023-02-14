@@ -1,5 +1,5 @@
 ﻿namespace DependencyInjection.AutoResolver;
 
-public interface IScoped
+public interface IResolveAsSingleton
 {
 }

@@ -5,25 +5,28 @@ namespace DependencyInjection.AutoResolver;
 
 public static class DependencyInjectionAutoResolver
 {
-    private static readonly List<Type> Interfaces = new() { typeof(IScoped), typeof(ITransient), typeof(ISingleton) };
+    private static readonly List<Type> Interfaces = new() {
+        typeof(IResolveAsScoped),
+        typeof(IResolveAsTransient),
+        typeof(IResolveAsSingleton)
+    };
 
-    public static void AutoResolveDependencyInjection(this IServiceCollection serviceCollection)
+    public static void AutoResolve(this IServiceCollection serviceCollection)
     {
         if (serviceCollection is null)
         {
             throw new ArgumentNullException(nameof(serviceCollection));
         }
 
-        var implementationTypes = GetTypes();
-        foreach (var implementationType in implementationTypes)
+        foreach (var implementationType in GetServiceTypes())
         {
             var interfaceTypes = implementationType.GetInterfaces();
             foreach (var item in Interfaces)
             {
                 if (interfaceTypes.Any(c => c == item))
                 {
-                    var interfaceType = interfaceTypes.FirstOrDefault(c => c != typeof(IAsSelf) && c != item);
-                    if (interfaceTypes.Any(c => c == typeof(IAsSelf)) || interfaceType is null)
+                    var interfaceType = interfaceTypes.FirstOrDefault(c => c != typeof(IResolveAsSelf) && c != item);
+                    if (interfaceTypes.Any(c => c == typeof(IResolveAsSelf)) || interfaceType is null)
                     {
                         interfaceType = implementationType;
                     }
@@ -39,17 +42,17 @@ public static class DependencyInjectionAutoResolver
 
     private static ServiceLifetime GetServiceLifetime(Type type)
     {
-        if (type == typeof(IScoped))
+        if (type == typeof(IResolveAsScoped))
         {
             return ServiceLifetime.Scoped;
         }
 
-        if (type == typeof(ISingleton))
+        if (type == typeof(IResolveAsSingleton))
         {
             return ServiceLifetime.Singleton;
         }
 
-        if (type == typeof(ITransient))
+        if (type == typeof(IResolveAsTransient))
         {
             return ServiceLifetime.Transient;
         }
@@ -57,12 +60,22 @@ public static class DependencyInjectionAutoResolver
         throw new ArgumentOutOfRangeException(nameof(type));
     }
 
+    private static IEnumerable<Type> GetServiceTypes()
+    {
+        var types = GetTypes().ToList();
+
+        return types.Where(c => c.IsClass &&
+            c.GetInterfaces().Length >= 1 &&
+            c.GetInterfaces().Any(f => Interfaces.Contains(f)));
+    }
+
     private static IEnumerable<Type> GetTypes()
     {
         var types = new List<Type>();
+        
         var entryAssembly = Assembly.GetEntryAssembly();
-
         var entryAssemblyTypes = entryAssembly.GetTypes().ToList();
+
         var referencedAssembliesTypes = entryAssembly.GetReferencedAssemblies()
             .Select(c => Assembly.Load(c))
             .SelectMany(c => c.GetTypes());
@@ -70,8 +83,6 @@ public static class DependencyInjectionAutoResolver
         types.AddRange(entryAssemblyTypes);
         types.AddRange(referencedAssembliesTypes);
 
-        return types.Where(c => c.IsClass &&
-            c.GetInterfaces().Length >= 1 &&
-            c.GetInterfaces().Any(f => Interfaces.Contains(f)));
+        return types;
     }
 }
