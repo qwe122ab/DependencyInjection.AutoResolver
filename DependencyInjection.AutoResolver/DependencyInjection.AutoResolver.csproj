@@ -11,7 +11,7 @@
     <RepositoryUrl>https://github.com/tscerbickas/DependencyInjection.AutoResolver</RepositoryUrl>
     <PackageTags>DependencyInjection;AutoResolver</PackageTags>
     <PackageProjectUrl>https://www.nuget.org/packages/DependencyInjection.AutoResolver</PackageProjectUrl>
-    <Version>1.0.2-alpha</Version>
+    <Version>1.0.3</Version>
   </PropertyGroup>
 
   <ItemGroup>
